@@ -53,11 +53,11 @@ const processQueue = async () => {
         reject(error);
     }
 
-    // Delay before next request to respect rate limit (~3 req/sec)
+    // Delay before next request to respect rate limit (60 req/min = 1 req/sec)
     setTimeout(() => {
         processing = false;
         processQueue();
-    }, 350);
+    }, 1000);
 };
 
 const fetchWithKey = (endpoint) => new Promise((resolve, reject) => {
