@@ -1,0 +1,237 @@
+.stock-card {
+    /* Background is now handled inline for dynamic gradients */
+    backdrop-filter: blur(10px);
+    /* Glassmorphism effect */
+    border-radius: 16px;
+    padding: 1.25rem;
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.stock-card:hover {
+    transform: translateY(-4px) scale(1.02);
+    /* box-shadow is also dynamic now, but we can add a subtle boost here if needed */
+    z-index: 10;
+}
+
+/* Removed static trend strip (::before) to allow full card gradient */
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.header-left {
+    display: flex;
+    flex-direction: column;
+}
+
+.stock-card h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.shares-badge {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+
+.remove-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding: 4px;
+    border-radius: 50%;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+
+.remove-btn:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.price-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.main-value {
+    display: flex;
+    flex-direction: column;
+}
+
+.main-value .label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    letter-spacing: 0.5px;
+}
+
+.main-value .value {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.return-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.return-percent {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.price-row {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.day-change.up {
+    color: var(--accent-green);
+}
+
+.day-change.down {
+    color: var(--accent-red);
+}
+
+.loading,
+.error {
+    min-height: 140px;
+    justify-content: center;
+    align-items: center;
+    color: var(--text-secondary);
+}
+
+/* === Simple View Styles === */
+.stock-card.simple-view {
+    padding: 6px 4px;
+    min-height: auto;
+    /* aspect-ratio: 1; Reverted */
+    border-radius: 0;
+    /* No rounding */
+    gap: 0;
+    justify-content: center;
+    /* Center content vertically */
+}
+
+.simple-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0px;
+    /* Super tight gap */
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+    /* Center vertically */
+    align-items: center;
+    text-align: center;
+}
+
+.simple-header {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    align-items: center;
+}
+
+.simple-header h3 {
+    font-size: 0.9rem;
+    /* Smaller font for compact */
+    margin: 0;
+}
+
+
+.simple-metrics {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.percent-main {
+    font-weight: 700;
+    font-size: 1.1rem;
+    /* Slightly larger to match image */
+}
+
+.percent-sub {
+    font-size: 0.7rem;
+    opacity: 0.8;
+}
+
+/* On larger screens, maybe we could switch back to horizontal? 
+   But user asked for compact. Let's keep it tile-like or responsive. */
+@media (min-width: 600px) {
+    .portfolio-grid.simple-mode {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        /* relaxed for desktop */
+    }
+
+    /* If we want horizontal on desktop, we would charge flex-direction here.
+       But tile layout is often cleaner. Let's stick to tile. */
+}
+
+/* Error State for Simple View */
+.stock-card.simple-view.error-simple {
+    background: #27272a;
+    /* Zinc-800 */
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    /* Red border */
+    color: #ef4444;
+    position: relative;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    /* Ensure it matches the height of normal cards by letting flex/grid handle it, 
+       but force reasonable padding */
+    padding: 0;
+    height: 100%;
+    /* Fill the grid cell */
+    min-height: 60px;
+    /* Minimum reasonable height */
+}
+
+.error-symbol {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #fff;
+}
+
+.error-icon {
+    display: flex;
+    align-items: center;
+    opacity: 0.8;
+}
+
+.remove-btn-simple {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    background: transparent;
+    border: none;
+    color: #ef4444;
+    padding: 2px;
+    cursor: pointer;
+    opacity: 0.6;
+}

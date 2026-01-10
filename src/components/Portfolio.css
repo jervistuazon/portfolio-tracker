@@ -1,0 +1,44 @@
+.portfolio-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    /* Responsive grid */
+    gap: 16px;
+    padding-bottom: 40px;
+}
+
+.portfolio-grid.simple-mode {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+
+.empty-portfolio {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-secondary);
+    border: 2px dashed var(--glass-border);
+    border-radius: 16px;
+}
+
+.empty-portfolio p {
+    margin: 0.5rem 0;
+    font-size: 1.2rem;
+}
+
+.empty-portfolio .sub-text {
+    font-size: 0.9rem;
+    opacity: 0.7;
+}
+
+/* Mobile optimizations */
+@media (max-width: 480px) {
+    .portfolio-grid {
+        grid-template-columns: 1fr;
+        /* Default to 1 column for detailed view */
+    }
+
+    .portfolio-grid.simple-mode {
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        /* Allow 4 columns on standard phones */
+        gap: 3px;
+        /* Tight 3px gap */
+    }
+}

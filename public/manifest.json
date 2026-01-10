@@ -1,0 +1,16 @@
+{
+  "name": "Stock Tracker Premium",
+  "short_name": "StockTracker",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0d0d0d",
+  "theme_color": "#00e676",
+  "description": "Premium personal stock portfolio tracker.",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
