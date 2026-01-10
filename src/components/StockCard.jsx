@@ -118,12 +118,7 @@ export default function StockCard({ holding, onRemove, onEdit, viewMode = 'detai
     const trendColor = `rgb(${targetColor})`;
 
     const backgroundStyle = {
-        background: `
-                rgba(${targetColor}, ${0.1 + (intensity * 0.2)}) 0%, 
-                rgba(${baseGrey}, 0.9) 60%,
-                rgba(${baseGrey}, 1) 100%
-            )
-        `,
+        backgroundColor: `rgba(${targetColor}, ${0.1 + (intensity * 0.2)})`,
         borderColor: `rgba(${targetColor}, ${0.2 + (intensity * 0.5)})`,
         boxShadow: `0 4px 20px rgba(${targetColor}, ${intensity * 0.15})`
     };
@@ -173,8 +168,7 @@ export default function StockCard({ holding, onRemove, onEdit, viewMode = 'detai
     const targetRGB = dayChangePositive ? '34, 197, 94' : '239, 68, 68'; // Bright Green/Red
 
     const simpleBackgroundStyle = {
-        background: `linear-gradient(135deg, rgba(${targetRGB}, ${0.2 + (simpleIntensity * 0.8)}), rgba(${targetRGB}, ${0.1 + (simpleIntensity * 0.5)}))`,
-        backgroundColor: '#18181b', // Fallback dark background
+        backgroundColor: `rgba(${targetRGB}, ${0.2 + (simpleIntensity * 0.8)})`,
         color: 'white',
         border: 'none'
     };
