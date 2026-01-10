@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "deploy": "gh-pages -d dist"
   },
-  "homepage": "https://jervistuazon.github.io/stock-tracker",
+  "homepage": "https://jervistuazon.github.io/portfolio-tracker",
   "dependencies": {
     "lucide-react": "^0.562.0",
     "react": "^19.2.0",
