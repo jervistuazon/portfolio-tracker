@@ -160,14 +160,17 @@ export default function StockBubble({
         return (
             <div className="bubble-wrapper" style={wrapperStyle}>
                 <div className="bubble-scale-wrapper">
-                    <div
-                        className="stock-bubble loading"
-                        style={{
-                            background: 'rgba(255,255,255,0.05)',
-                            border: '1px solid rgba(255,255,255,0.1)'
-                        }}
-                    >
-                        <Loader className="spin-animation" size={Math.max(16, size / 4)} />
+                    <div className="bubble-jitter-wrapper">
+                        <div
+                            className="stock-bubble loading"
+                            style={{
+                                background: 'rgba(255,255,255,0.05)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                fontSize: Math.max(10, size / 5) + 'px'
+                            }}
+                        >
+                            <Loader className="spin-animation" size={Math.max(16, size / 4)} />
+                        </div>
                     </div>
                 </div>
             </div>
@@ -178,8 +181,10 @@ export default function StockBubble({
         return (
             <div className="bubble-wrapper" style={wrapperStyle}>
                 <div className="bubble-scale-wrapper">
-                    <div className="stock-bubble error" style={{}}>
-                        <span>?</span>
+                    <div className="bubble-jitter-wrapper">
+                        <div className="stock-bubble error" style={{ fontSize: Math.max(14, size / 3) + 'px' }}>
+                            <span>?</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -194,11 +199,33 @@ export default function StockBubble({
     const b = isPositive ? 94 : 68;
     const opacity = 0.3 + (intensity * 0.7);
 
+    const absChange = Math.abs(dayChange);
+    let animationName = 'none';
+    let animationDuration = '0s';
+    let breatheScale = 1.05;
+
+    if (absChange > 0.05) {
+        if (isPositive) {
+            animationName = 'positive-breathe';
+            // Slower, more majestic breathing for green
+            animationDuration = `${Math.max(2, 8 / (absChange * 0.5))}s`;
+            // Max 20% increase (1.2 scale)
+            breatheScale = 1 + (Math.min(absChange, 10) / 10 * 0.2);
+        } else {
+            animationName = 'jitter';
+            // Fast, chaotic jitter for red
+            animationDuration = `${Math.max(0.05, 1.5 / (absChange * 1.5))}s`;
+        }
+    }
+
     const bubbleStyle = {
         backgroundColor: `rgba(${r}, ${g}, ${b}, ${opacity})`,
         border: `2px solid rgba(${r}, ${g}, ${b}, 1)`,
         fontSize: Math.max(10, size / 5) + 'px',
-        '--pulse-rgb': `${r}, ${g}, ${b}`
+        '--pulse-rgb': `${r}, ${g}, ${b}`,
+        '--bubble-animation': animationName,
+        '--animation-duration': animationDuration,
+        '--breathe-scale': breatheScale
     };
 
     const shouldPulse = Math.abs(dayChange) >= 5;
@@ -236,15 +263,21 @@ export default function StockBubble({
                 whileDrag={{ scale: 1.2 }}
             >
                 <div className="bubble-scale-wrapper">
-                    <div
-                        className={`stock-bubble ${shouldPulse ? 'pulse' : ''}`}
-                        style={bubbleStyle}
-                    >
-                        <div className="bubble-content">
-                            {!hideTicker && <span className="bubble-symbol">{symbol}</span>}
-                            <span className="bubble-change">
-                                {dayChange > 0 ? '+' : ''}{dayChange.toFixed(2)}%
-                            </span>
+                    <div className="bubble-jitter-wrapper" style={{
+                        '--bubble-animation': animationName,
+                        '--animation-duration': animationDuration,
+                        '--breathe-scale': breatheScale
+                    }}>
+                        <div
+                            className={`stock-bubble ${shouldPulse ? 'pulse' : ''}`}
+                            style={bubbleStyle}
+                        >
+                            <div className="bubble-content">
+                                {!hideTicker && <span className="bubble-symbol">{symbol}</span>}
+                                <span className="bubble-change">
+                                    {dayChange > 0 ? '+' : ''}{dayChange.toFixed(2)}%
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>

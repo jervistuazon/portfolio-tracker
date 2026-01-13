@@ -3,7 +3,7 @@ import StockBubble from './StockBubble';
 import './Portfolio.css';
 
 export default function BubblePortfolio({ stocks, onQuoteUpdate, hideTicker }) {
-    const [dimensions, setDimensions] = useState({ width: window.innerWidth, height: window.innerHeight - 100 });
+    const [dimensions, setDimensions] = useState({ width: window.innerWidth, height: window.innerHeight - 80 });
     const [draggedBubble, setDraggedBubble] = useState(null); // { symbol, x, y }
     const [bubblesData, setBubblesData] = useState([]); // Store bubble data for collision calculation
 
@@ -11,7 +11,7 @@ export default function BubblePortfolio({ stocks, onQuoteUpdate, hideTicker }) {
         const updateDim = () => {
             setDimensions({
                 width: window.innerWidth,
-                height: window.innerHeight - 100
+                height: window.innerHeight - 80
             });
         };
 
@@ -216,8 +216,8 @@ export default function BubblePortfolio({ stocks, onQuoteUpdate, hideTicker }) {
                 top: 0,
                 left: 0,
                 width: '100vw',
-                height: 'calc(100vh - 100px)',
-                overflow: 'hidden',
+                height: 'calc(100vh - 80px)',
+                overflow: 'visible', // Allow tentacles to peek out if needed
                 zIndex: 0
             }}
         >

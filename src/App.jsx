@@ -136,6 +136,11 @@ function App() {
 
   return (
     <div className={`app-container ${viewMode === 'bubble' ? 'bubble-mode' : ''}`}>
+      <div className="mesh-container">
+        <div className="mesh-blob blob-1"></div>
+        <div className="mesh-blob blob-2"></div>
+        <div className="mesh-blob blob-3"></div>
+      </div>
       {!apiKey && <ApiKeyInput onSave={handleApiKeySaved} />}
 
       {syncModalOpen && (
