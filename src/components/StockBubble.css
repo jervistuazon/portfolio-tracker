@@ -1,17 +1,29 @@
 .bubble-wrapper {
     position: absolute;
-    /* Vertical animation on wrapper */
-    animation: floatY var(--float-duration, 6s) ease-in-out infinite;
-    animation-delay: var(--float-delay, 0s);
-    /* Ensure click events pass to children if needed, but wrapper matches size so it captures them too.
-       Actually, events on wrapper bubble down. */
+    /* Removed floatY animation - conflicts with framer-motion drag transforms */
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    cursor: grab;
+}
+
+/* Very slow return animation when released */
+.bubble-wrapper.returning {
+    transition: transform 2s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 .bubble-scale-wrapper {
     width: 100%;
     height: 100%;
-    animation: breathe var(--breath-duration, 4s) ease-in-out infinite;
-    animation-delay: var(--breath-delay, 0s);
+    animation:
+        breathe var(--breath-duration, 4s) ease-in-out infinite,
+        floatY var(--float-duration, 6s) ease-in-out infinite;
+    animation-delay:
+        var(--breath-delay, 0s),
+        var(--float-delay, 0s);
 }
 
 @keyframes breathe {
@@ -59,6 +71,12 @@
         var(--sway-delay, 0s),
         var(--blob-delay, 0s);
     aspect-ratio: 1 / 1;
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 /* Hover Effects */

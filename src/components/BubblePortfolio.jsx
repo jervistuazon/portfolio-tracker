@@ -1,9 +1,11 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useCallback } from 'react';
 import StockBubble from './StockBubble';
 import './Portfolio.css';
 
 export default function BubblePortfolio({ stocks, onQuoteUpdate, hideTicker }) {
     const [dimensions, setDimensions] = useState({ width: window.innerWidth, height: window.innerHeight - 100 });
+    const [draggedBubble, setDraggedBubble] = useState(null); // { symbol, x, y }
+    const [bubblesData, setBubblesData] = useState([]); // Store bubble data for collision calculation
 
     useEffect(() => {
         const updateDim = () => {
@@ -139,7 +141,7 @@ export default function BubblePortfolio({ stocks, onQuoteUpdate, hideTicker }) {
         const layoutCenterX = (minX + maxX) / 2;
         const layoutCenterY = (minY + maxY) / 2;
 
-        return placedBubbles.map(b => {
+        const result = placedBubbles.map(b => {
             const dx = b.x - layoutCenterX;
             const dy = b.y - layoutCenterY;
 
@@ -152,7 +154,59 @@ export default function BubblePortfolio({ stocks, onQuoteUpdate, hideTicker }) {
             };
         });
 
+        return result;
+
     }, [stocks, dimensions]);
+
+    // Update bubbles data when bubbles change (safe effect instead of ref during render)
+    useEffect(() => {
+        setBubblesData(bubbles);
+    }, [bubbles]);
+
+    // Handle drag updates from child bubbles
+    const handleDrag = useCallback((symbol, dragX, dragY) => {
+        setDraggedBubble({ symbol, x: dragX, y: dragY });
+    }, []);
+
+    const handleDragEnd = useCallback(() => {
+        setDraggedBubble(null);
+    }, []);
+
+    // Calculate repulsion offset for each bubble based on dragged bubble position
+    const getRepulsionOffset = useCallback((bubble) => {
+        if (!draggedBubble || draggedBubble.symbol === bubble.symbol) {
+            return { x: 0, y: 0 };
+        }
+
+        // Calculate distance from dragged bubble's current position to this bubble's home position
+        const dx = bubble.x - draggedBubble.x;
+        const dy = bubble.y - draggedBubble.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        // Find the dragged bubble's radius
+        const draggedBubbleData = bubblesData.find(b => b.symbol === draggedBubble.symbol);
+        const draggedRadius = draggedBubbleData ? draggedBubbleData.r : 50;
+
+        const minDistance = bubble.r + draggedRadius;
+        const repulsionRange = minDistance * 1.2; // Reduced range for softer effect
+
+        if (distance < repulsionRange && distance > 0) {
+            // Calculate repulsion strength (weaker, more subtle push)
+            const overlap = repulsionRange - distance;
+            const strength = Math.min(overlap * 0.15, 12); // Much softer: 0.15 multiplier, max 12px push
+
+            // Normalize direction and apply strength
+            const nx = dx / distance;
+            const ny = dy / distance;
+
+            return {
+                x: nx * strength,
+                y: ny * strength
+            };
+        }
+
+        return { x: 0, y: 0 };
+    }, [draggedBubble, bubblesData]);
 
     return (
         <div
@@ -167,17 +221,24 @@ export default function BubblePortfolio({ stocks, onQuoteUpdate, hideTicker }) {
                 zIndex: 0
             }}
         >
-            {bubbles.map(b => (
-                <StockBubble
-                    key={b.symbol}
-                    holding={b}
-                    size={b.size}
-                    x={b.x}
-                    y={b.y}
-                    onQuoteUpdate={onQuoteUpdate}
-                    hideTicker={hideTicker}
-                />
-            ))}
+            {bubbles.map(b => {
+                const repulsion = getRepulsionOffset(b);
+                return (
+                    <StockBubble
+                        key={b.symbol}
+                        holding={b}
+                        size={b.size}
+                        x={b.x}
+                        y={b.y}
+                        repulsionX={repulsion.x}
+                        repulsionY={repulsion.y}
+                        onQuoteUpdate={onQuoteUpdate}
+                        hideTicker={hideTicker}
+                        onDrag={handleDrag}
+                        onDragEnd={handleDragEnd}
+                    />
+                );
+            })}
         </div>
     );
 }
