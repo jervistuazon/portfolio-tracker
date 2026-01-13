@@ -1,0 +1,214 @@
+.bubble-wrapper {
+    position: absolute;
+    /* Vertical animation on wrapper */
+    animation: floatY var(--float-duration, 6s) ease-in-out infinite;
+    animation-delay: var(--float-delay, 0s);
+    /* Ensure click events pass to children if needed, but wrapper matches size so it captures them too.
+       Actually, events on wrapper bubble down. */
+}
+
+.bubble-scale-wrapper {
+    width: 100%;
+    height: 100%;
+    animation: breathe var(--breath-duration, 4s) ease-in-out infinite;
+    animation-delay: var(--breath-delay, 0s);
+}
+
+@keyframes breathe {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+
+    /* 5% growth */
+    100% {
+        transform: scale(1);
+    }
+}
+
+.stock-bubble {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    box-shadow:
+        inset 0 0 20px rgba(255, 255, 255, 0.2),
+        /* Inner glow */
+        0 4px 10px rgba(0, 0, 0, 0.3);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    /* Bouncy transition */
+    backdrop-filter: blur(4px);
+    overflow: hidden;
+    cursor: pointer;
+
+    /* Animations */
+    animation:
+        popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) backwards,
+        swayX var(--sway-duration, 7s) ease-in-out infinite,
+        blob var(--blob-duration, 10s) ease-in-out infinite;
+
+    animation-delay:
+        var(--pop-delay, 0s),
+        var(--sway-delay, 0s),
+        var(--blob-delay, 0s);
+    aspect-ratio: 1 / 1;
+}
+
+/* Hover Effects */
+.bubble-wrapper:hover {
+    z-index: 1000 !important;
+    /* Force on top */
+}
+
+.stock-bubble:hover {
+    transform: scale(1.15);
+    box-shadow:
+        inset 0 0 30px rgba(255, 255, 255, 0.4),
+        0 15px 30px rgba(0, 0, 0, 0.4);
+    /* Deeper shadow on lift */
+}
+
+/* Glassy Shine */
+.stock-bubble::after {
+    content: '';
+    position: absolute;
+    top: 5%;
+    left: 10%;
+    width: 25%;
+    height: 15%;
+    border-radius: 50%;
+    background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0) 70%);
+    filter: blur(1px);
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+@keyframes floatY {
+    0% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+
+    100% {
+        transform: translateY(0);
+    }
+}
+
+@keyframes swayX {
+    0% {
+        transform: translateX(0);
+    }
+
+    50% {
+        transform: translateX(var(--sway-amount, 5px));
+    }
+
+    100% {
+        transform: translateX(0);
+    }
+}
+
+@keyframes blob {
+    0% {
+        border-radius: 50%;
+    }
+
+    33% {
+        border-radius: 54% 46% 48% 52% / 52% 48% 54% 46%;
+    }
+
+    66% {
+        border-radius: 46% 54% 52% 48% / 48% 52% 46% 54%;
+    }
+
+    100% {
+        border-radius: 50%;
+    }
+}
+
+@keyframes popIn {
+    0% {
+        opacity: 0;
+        transform: scale(0);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow:
+            inset 0 0 20px rgba(255, 255, 255, 0.2),
+            0 4px 10px rgba(0, 0, 0, 0.3),
+            0 0 0 0 rgba(var(--pulse-rgb, 255, 255, 255), 0.6);
+    }
+
+    70% {
+        box-shadow:
+            inset 0 0 20px rgba(255, 255, 255, 0.2),
+            0 4px 10px rgba(0, 0, 0, 0.3),
+            0 0 0 20px rgba(var(--pulse-rgb, 255, 255, 255), 0);
+    }
+
+    100% {
+        box-shadow:
+            inset 0 0 20px rgba(255, 255, 255, 0.2),
+            0 4px 10px rgba(0, 0, 0, 0.3),
+            0 0 0 0 rgba(var(--pulse-rgb, 255, 255, 255), 0);
+    }
+}
+
+.stock-bubble.pulse {
+    animation:
+        popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) backwards,
+        swayX var(--sway-duration, 7s) ease-in-out infinite,
+        blob var(--blob-duration, 10s) ease-in-out infinite,
+        pulse 2s infinite;
+    animation-delay:
+        var(--pop-delay, 0s),
+        var(--sway-delay, 0s),
+        var(--blob-delay, 0s),
+        0s;
+}
+
+.bubble-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.2;
+    text-align: center;
+    pointer-events: none;
+    /* Let clicks pass through if needed */
+}
+
+.bubble-symbol {
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.bubble-change {
+    font-weight: 500;
+    opacity: 0.9;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.stock-bubble.loading,
+.stock-bubble.error {
+    background-color: #333;
+    border: 2px solid #555;
+    color: #888;
+}

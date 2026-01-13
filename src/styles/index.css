@@ -1,15 +1,55 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
 
 :root {
-  --bg-color: #0d0d0d;
-  --card-bg: #1a1a1a;
+  /* New Dark Palette: Richer Charcoal/Slate tones */
+  --bg-color: #141416;
+  --card-bg: #1e1e22;
   --text-primary: #ffffff;
   --text-secondary: #a1a1aa;
   --accent-green: #00e676;
   --accent-red: #ff1744;
   --accent-blue: #2979ff;
-  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  /* Slightly more subtle */
   --font-main: 'Outfit', sans-serif;
+  --btn-secondary-bg: #2a2a2e;
+  --btn-secondary-text: #fff;
+  --muted-container: rgba(255, 255, 255, 0.03);
+
+  /* New semantic variables */
+  --nav-bg: rgba(30, 30, 34, 0.9);
+  --shadow-color: rgba(0, 0, 0, 0.4);
+  --heading-gradient: linear-gradient(to right, #fff, #b0b0bb);
+  --icon-btn-hover: rgba(255, 255, 255, 0.08);
+
+  /* Trend Colors (RGB format for usage in rgba) */
+  --color-positive-rgb: 34, 197, 94;
+  /* Green 500 */
+  --color-negative-rgb: 239, 68, 68;
+  /* Red 500 */
+}
+
+[data-theme="light"] {
+  --bg-color: #f0f2f5;
+  --card-bg: #e4e4e7;
+  --text-primary: #1a1a1a;
+  --text-secondary: #666666;
+  --accent-green: #00c853;
+  --accent-red: #d50000;
+  --accent-blue: #2962ff;
+  --glass-border: rgba(0, 0, 0, 0.1);
+  --btn-secondary-bg: #e5e5e5;
+  --btn-secondary-text: #1a1a1a;
+  --muted-container: rgba(0, 0, 0, 0.05);
+
+  --nav-bg: rgba(255, 255, 255, 0.85);
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --heading-gradient: linear-gradient(to right, #1a1a1a, #666);
+  --icon-btn-hover: rgba(0, 0, 0, 0.05);
+
+  /* Darker Trend Colors for Light Mode (Green/Red 700) */
+  --color-positive-rgb: 21, 128, 61;
+  --color-negative-rgb: 185, 28, 28;
 }
 
 body {

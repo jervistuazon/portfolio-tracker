@@ -1,13 +1,24 @@
 import StockCard from './StockCard';
+import BubblePortfolio from './BubblePortfolio';
 import './Portfolio.css';
 
-export default function Portfolio({ stocks, onRemove, onEdit, viewMode, onQuoteUpdate }) {
+export default function Portfolio({ stocks, onRemove, onEdit, viewMode, onQuoteUpdate, hideTicker }) {
     if (stocks.length === 0) {
         return (
             <div className="empty-portfolio">
                 <p>Your portfolio is empty.</p>
                 <p className="sub-text">Search for a stock to start tracking.</p>
             </div>
+        );
+    }
+
+    if (viewMode === 'bubble') {
+        return (
+            <BubblePortfolio
+                stocks={stocks}
+                onQuoteUpdate={onQuoteUpdate}
+                hideTicker={hideTicker}
+            />
         );
     }
 
@@ -21,8 +32,10 @@ export default function Portfolio({ stocks, onRemove, onEdit, viewMode, onQuoteU
                     onEdit={onEdit}
                     viewMode={viewMode}
                     onQuoteUpdate={onQuoteUpdate}
+                    hideTicker={hideTicker}
                 />
             ))}
         </div>
     );
 }
+

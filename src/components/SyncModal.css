@@ -28,7 +28,7 @@
 
 .sync-tabs {
     display: flex;
-    background: rgba(0, 0, 0, 0.3);
+    background: var(--muted-container);
     padding: 4px;
     border-radius: 8px;
     margin-bottom: 1rem;
@@ -98,8 +98,8 @@
 }
 
 .action-btn.secondary {
-    background: #333;
-    color: white;
+    background: var(--btn-secondary-bg);
+    color: var(--btn-secondary-text);
 }
 
 .action-btn:active {

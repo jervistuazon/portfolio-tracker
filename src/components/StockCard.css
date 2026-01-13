@@ -5,7 +5,7 @@
     border-radius: 16px;
     padding: 1.25rem;
     position: relative;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--glass-border);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden;
     display: flex;
@@ -57,7 +57,7 @@
 
 .remove-btn:hover {
     opacity: 1;
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--icon-btn-hover);
 }
 
 .price-info {
@@ -123,6 +123,21 @@
     color: var(--text-secondary);
 }
 
+.spin-animation {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
 /* === Simple View Styles === */
 .stock-card.simple-view {
     padding: 6px 4px;
@@ -133,6 +148,17 @@
     gap: 0;
     justify-content: center;
     /* Center content vertically */
+
+    /* Default (Dark Mode) Calculation */
+    /* 0.2 base + (intensity * 0.8) */
+    background-color: rgba(var(--card-rgb), calc(0.2 + (var(--card-intensity) * 0.8)));
+}
+
+[data-theme="light"] .stock-card.simple-view {
+    /* Light Mode Calculation: Darker Base Colors (via variables) allow for wider dynamic range */
+    /* 0.4 base + (intensity * 0.6) = Ranges from 0.4 to 1.0 opacity */
+    /* Since the base RGB is darker in light mode, even 0.4 is visible, restoring the dynamic feel */
+    background-color: rgba(var(--card-rgb), calc(0.4 + (var(--card-intensity) * 0.6)));
 }
 
 .simple-card-content {

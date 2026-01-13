@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
-import { getStockQuote, getStockCandles } from '../services/api';
-import { TrendingUp, TrendingDown, X, Pencil } from 'lucide-react';
+import { getStockQuote } from '../services/api';
+import { TrendingUp, TrendingDown, X, Pencil, Loader } from 'lucide-react';
 import './StockCard.css';
 
-export default function StockCard({ holding, onRemove, onEdit, viewMode = 'detailed', onQuoteUpdate }) {
+export default function StockCard({ holding, onRemove, onEdit, viewMode = 'detailed', onQuoteUpdate, hideTicker }) {
     const { symbol, quantity, avgCost } = holding;
     // Initialize with latestQuote if available to avoid flicker on re-sort
     const [quote, setQuote] = useState(holding.latestQuote || null);
-    const [candles, setCandles] = useState([]);
     // If we have initial data, we are not loading
     const [loading, setLoading] = useState(!holding.latestQuote);
     const [error, setError] = useState(false);
@@ -33,41 +32,6 @@ export default function StockCard({ holding, onRemove, onEdit, viewMode = 'detai
                     }
                 }
 
-                // 2. Fetch Candles (Optional - Graph)
-                if (viewMode === 'simple') {
-                    const now = Math.floor(Date.now() / 1000);
-                    let candleData = null;
-
-                    try {
-                        // Try 5-minute resolution (Last 24h)
-                        const from24h = now - (24 * 3600);
-                        candleData = await getStockCandles(symbol, '5', from24h, now);
-
-                        // Check if 403 or no data
-                        if (candleData && candleData.s === 'no_data') throw new Error('No 5min data');
-
-                        // If it failed (implicit in api wrapper? assuming it throws or returns error obj)
-                        // API wrapper usually returns json. If 403, standard fetch might throw if not handled.
-                        // Assuming fetchWithKey handles it or returns error struct.
-                    } catch (e) {
-                        console.warn(`Failed 5m candles for ${symbol}, trying Daily fallback.`, e);
-                        candleData = null;
-                    }
-
-                    // Fallback to Daily (Last 30 days) if 5min failed or empty
-                    if (!candleData || candleData.s !== 'ok' || !candleData.c) {
-                        try {
-                            const from30d = now - (30 * 24 * 3600);
-                            candleData = await getStockCandles(symbol, 'D', from30d, now);
-                        } catch (e) {
-                            console.warn(`Failed Daily candles for ${symbol}`, e);
-                        }
-                    }
-
-                    if (mounted && candleData && candleData.s === 'ok' && candleData.c) {
-                        setCandles(candleData.c);
-                    }
-                }
 
             } catch (err) {
                 console.error("Critical error fetching stock:", err);
@@ -83,9 +47,44 @@ export default function StockCard({ holding, onRemove, onEdit, viewMode = 'detai
             mounted = false;
             clearInterval(interval);
         };
-    }, [symbol, viewMode]);
+    }, [symbol, viewMode, onQuoteUpdate]);
 
-    if (loading) return <div className="stock-card loading" style={{ minHeight: viewMode === 'simple' ? '60px' : 'auto' }}><span>Loading...</span></div>;
+    if (loading) {
+        if (viewMode === 'bubble') {
+            // Bubble loading state - circle
+            return (
+                <div
+                    className="stock-card loading bubble-loading"
+                    style={{
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        aspectRatio: '1',
+                        width: '100%',
+                        height: '100%'
+                    }}
+                >
+                    <Loader className="spin-animation" size={24} />
+                </div>
+            );
+        }
+
+        // Detailed & Simple loading states
+        return (
+            <div
+                className={`stock-card loading ${viewMode === 'simple' ? 'simple-view' : ''}`}
+                style={{
+                    minHeight: viewMode === 'simple' ? '60px' : 'auto',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                }}
+            >
+                <Loader className="spin-animation" size={24} />
+            </div>
+        );
+    }
 
     if (error) {
         if (viewMode === 'simple') {
@@ -113,7 +112,6 @@ export default function StockCard({ holding, onRemove, onEdit, viewMode = 'detai
 
     // Gradient Calculation
     const intensity = Math.min(Math.abs(returnPercent), 10) / 10;
-    const baseGrey = '40, 40, 45'; // Dark grey
     const targetColor = isPositive ? '34, 197, 94' : '239, 68, 68';
     const trendColor = `rgb(${targetColor})`;
 
@@ -125,36 +123,6 @@ export default function StockCard({ holding, onRemove, onEdit, viewMode = 'detai
 
     const dayChangePositive = quote.d >= 0;
 
-    const renderSparkline = () => {
-        // Use Real Candle Data if available
-        if (candles.length > 1) {
-            const prices = candles;
-            const min = Math.min(...prices);
-            const max = Math.max(...prices);
-            const range = max - min || 1;
-
-            const points = prices.map((price, i) => {
-                const x = (i / (prices.length - 1)) * 100;
-                const y = 40 - ((price - min) / range) * 40;
-                return `${x.toFixed(1)},${y.toFixed(1)}`;
-            }).join(' ');
-
-            return (
-                <svg viewBox="0 0 100 40" width="100%" height="40" className="sparkline" preserveAspectRatio="none">
-                    <polyline
-                        points={points}
-                        fill="none"
-                        stroke={dayChangePositive ? '#4ade80' : '#f87171'}
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                    />
-                </svg>
-            );
-        }
-
-        return null;
-    };
 
     // Simple View specific background
     // Simple View specific background
@@ -165,10 +133,12 @@ export default function StockCard({ holding, onRemove, onEdit, viewMode = 'detai
     // Dark/Transparent (0% change) -> Bright/Solid (10% change)
 
     const simpleIntensity = Math.min(Math.abs(quote.dp), 10) / 10; // 0 to 1
-    const targetRGB = dayChangePositive ? '34, 197, 94' : '239, 68, 68'; // Bright Green/Red
+    // Use CSS Variables instead of hardcoded strings to allow theme switching
+    const targetRGB = dayChangePositive ? 'var(--color-positive-rgb)' : 'var(--color-negative-rgb)';
 
     const simpleBackgroundStyle = {
-        backgroundColor: `rgba(${targetRGB}, ${0.2 + (simpleIntensity * 0.8)})`,
+        '--card-rgb': targetRGB,
+        '--card-intensity': simpleIntensity,
         color: 'white',
         border: 'none'
     };
@@ -178,7 +148,7 @@ export default function StockCard({ holding, onRemove, onEdit, viewMode = 'detai
             <div className="stock-card simple-view" style={simpleBackgroundStyle}>
                 <div className="simple-card-content">
                     <div className="simple-header">
-                        <h3 style={{ color: 'white' }}>{symbol}</h3>
+                        {!hideTicker && <h3 style={{ color: 'white' }}>{symbol}</h3>}
                     </div>
 
                     <div className="simple-metrics">
@@ -195,7 +165,7 @@ export default function StockCard({ holding, onRemove, onEdit, viewMode = 'detai
         <div className="stock-card" style={backgroundStyle}>
             <div className="card-header">
                 <div className="header-left">
-                    <h3>{symbol}</h3>
+                    {!hideTicker && <h3>{symbol}</h3>}
                     <span className="shares-badge">{quantity} shares @ ${avgCost.toFixed(2)}</span>
                 </div>
                 <div style={{ display: 'flex', gap: '8px' }}>

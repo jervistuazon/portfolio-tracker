@@ -1,12 +1,11 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import SearchBar from './components/SearchBar';
 import Portfolio from './components/Portfolio';
 import ApiKeyInput from './components/ApiKeyInput';
 import AddPositionModal from './components/AddPositionModal';
 import SyncModal from './components/SyncModal';
 import { getApiKey } from './services/api';
-import { initialPortfolio } from './data/initialPortfolio';
-import { Eye, EyeOff, LayoutGrid, List, ArrowUpDown, Search, ArrowDownAZ, ArrowUpAZ, TrendingUp, TrendingDown, Cloud } from 'lucide-react';
+import { Eye, EyeOff, LayoutGrid, List, ArrowUpDown, Search, ArrowDownAZ, ArrowUpAZ, TrendingUp, TrendingDown, Cloud, Sun, Moon } from 'lucide-react';
 import './styles/App.css';
 
 function App() {
@@ -28,6 +27,13 @@ function App() {
   const [selectedSymbol, setSelectedSymbol] = useState(null);
   const [editingPosition, setEditingPosition] = useState(null);
   const [syncModalOpen, setSyncModalOpen] = useState(false);
+  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
+  const [hideTicker, setHideTicker] = useState(false);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
 
   useEffect(() => {
     localStorage.setItem('stock_portfolio_v2', JSON.stringify(portfolio));
@@ -74,14 +80,10 @@ function App() {
     setPortfolio(portfolio.filter(p => p.symbol !== symbol));
   };
 
-  const loadInitialPortfolio = () => {
-    if (confirm("This will replace your current portfolio with the initial dataset. Are you sure?")) {
-      setPortfolio(initialPortfolio);
-    }
-  };
 
   // Callback for StockCard to report back the latest price data
-  const handleQuoteUpdate = (symbol, quote) => {
+  // Callback for StockCard to report back the latest price data
+  const handleQuoteUpdate = useCallback((symbol, quote) => {
     setPortfolio(prevPortfolio => {
       // Only update if the specific stock needs updating to avoid unnecessary writes
       // Actually, we need to update state to trigger re-sort if keeping track of live sort
@@ -91,7 +93,7 @@ function App() {
           : p
       );
     });
-  };
+  }, []);
 
   // Sorting Logic
   const sortedPortfolio = useMemo(() => {
@@ -131,18 +133,9 @@ function App() {
     }
   };
 
-  const getSortSymbolLabel = () => {
-    if (sortConfig.key !== 'symbol') return 'A-Z';
-    return sortConfig.direction === 'asc' ? 'A-Z' : 'Z-A';
-  };
-
-  const getSortChangeLabel = () => {
-    if (sortConfig.key !== 'dayChange') return 'Change';
-    return sortConfig.direction === 'desc' ? 'High %' : 'Low %';
-  };
 
   return (
-    <div className="app-container">
+    <div className={`app-container ${viewMode === 'bubble' ? 'bubble-mode' : ''}`}>
       {!apiKey && <ApiKeyInput onSave={handleApiKeySaved} />}
 
       {syncModalOpen && (
@@ -173,6 +166,7 @@ function App() {
           onEdit={handleEditPosition}
           viewMode={viewMode}
           onQuoteUpdate={handleQuoteUpdate}
+          hideTicker={hideTicker}
         />
       </main>
 
@@ -180,7 +174,7 @@ function App() {
         <button
           onClick={() => setSyncModalOpen(true)}
           className="icon-btn"
-          style={{ background: 'none', color: '#a1a1aa' }}
+          style={{ background: 'transparent', color: 'var(--text-secondary)' }}
           title="Sync Data"
         >
           <Cloud size={24} />
@@ -188,55 +182,68 @@ function App() {
 
         <button
           onClick={handleSortSymbol}
-          className="icon-btn sort-btn"
+          className="icon-btn"
           style={{
-            // Logic: If active, maybe blue? Or just specific colors per button?
-            // The image shows A-Z is grey (maybe because not primary sort?) and High% is Blue (Active).
-            // Let's stick to: Active = Blue, Inactive = Dark Grey.
-            background: sortConfig.key === 'symbol' ? 'rgba(59, 130, 246, 0.8)' : 'rgba(255,255,255,0.1)',
+            background: sortConfig.key === 'symbol' ? 'var(--accent-blue)' : 'var(--icon-btn-hover)',
+            color: sortConfig.key === 'symbol' ? 'white' : 'var(--text-secondary)'
           }}
-          title="Sort by Symbol"
+          title={`Sort by Symbol (${sortConfig.key === 'symbol' && sortConfig.direction === 'desc' ? 'Z-A' : 'A-Z'})`}
         >
-          <ArrowUpDown size={14} />
-          <span className="btn-label">
-            {sortConfig.key === 'symbol' && sortConfig.direction === 'desc' ? 'Z-A' : 'A-Z'}
-          </span>
+          {sortConfig.key === 'symbol' && sortConfig.direction === 'desc' ? <ArrowUpAZ size={24} /> : <ArrowDownAZ size={24} />}
         </button>
 
         <button
           onClick={handleSortChange}
-          className="icon-btn sort-btn"
+          className="icon-btn"
           style={{
-            background: sortConfig.key === 'dayChange' ? 'rgba(59, 130, 246, 0.8)' : 'rgba(255,255,255,0.1)',
+            background: sortConfig.key === 'dayChange' ? 'var(--accent-blue)' : 'var(--icon-btn-hover)',
+            color: sortConfig.key === 'dayChange' ? 'white' : 'var(--text-secondary)'
           }}
-          title="Sort by Daily Change"
+          title={`Sort by Daily Change (${sortConfig.key === 'dayChange' && sortConfig.direction === 'asc' ? 'Low %' : 'High %'})`}
         >
-          <ArrowUpDown size={14} />
-          <span className="btn-label">
-            {/* Show High/% or Low/% */}
-            {sortConfig.key === 'dayChange' && sortConfig.direction === 'asc'
-              ? 'Low %'
-              : 'High %'
-            }
-          </span>
+          {sortConfig.key === 'dayChange' && sortConfig.direction === 'asc' ? <TrendingDown size={24} /> : <TrendingUp size={24} />}
         </button>
 
         <button
-          onClick={() => setViewMode(prev => prev === 'detailed' ? 'simple' : 'detailed')}
+          onClick={() => setViewMode(prev => {
+            if (prev === 'detailed') return 'simple';
+            if (prev === 'simple') return 'bubble';
+            return 'detailed';
+          })}
           className="icon-btn"
-          style={{ background: 'none', border: 'none', color: '#a1a1aa', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
-          title={viewMode === 'detailed' ? "Switch to Simple View" : "Switch to Detailed View"}
+          style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+          title={`Current View: ${viewMode.charAt(0).toUpperCase() + viewMode.slice(1)}`}
         >
-          {viewMode === 'detailed' ? <List size={24} /> : <LayoutGrid size={24} />}
+          {viewMode === 'detailed' && <List size={24} />}
+          {viewMode === 'simple' && <LayoutGrid size={24} />}
+          {viewMode === 'bubble' && <div style={{ width: 20, height: 20, borderRadius: '50%', border: '2px solid currentColor' }}></div>}
         </button>
 
         <button
           onClick={() => setShowSearch(!showSearch)}
           className="icon-btn"
-          style={{ background: 'none', border: 'none', color: showSearch ? '#3b82f6' : '#a1a1aa', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+          style={{ background: 'transparent', border: 'none', color: showSearch ? 'var(--accent-blue)' : 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
           title="Search Stocks"
         >
           <Search size={24} />
+        </button>
+
+        <button
+          onClick={() => setTheme(prev => prev === 'dark' ? 'light' : 'dark')}
+          className="icon-btn"
+          style={{ background: 'transparent', border: 'none', color: theme === 'light' ? 'var(--text-primary)' : 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+          title="Toggle Theme"
+        >
+          {theme === 'dark' ? <Sun size={24} /> : <Moon size={24} />}
+        </button>
+
+        <button
+          onClick={() => setHideTicker(!hideTicker)}
+          className="icon-btn"
+          style={{ background: 'transparent', border: 'none', color: hideTicker ? 'var(--accent-blue)' : 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+          title={hideTicker ? "Show Tickers" : "Hide Tickers"}
+        >
+          {hideTicker ? <EyeOff size={24} /> : <Eye size={24} />}
         </button>
       </div>
     </div>

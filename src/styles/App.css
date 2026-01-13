@@ -1,7 +1,8 @@
 h1 {
   font-weight: 700;
   letter-spacing: -0.5px;
-  background: linear-gradient(to right, #fff, #aaa);
+  background: var(--heading-gradient);
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -15,26 +16,25 @@ h1 {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
 
-  padding: 10px 20px;
+  padding: 10px 12px;
   width: auto;
-  max-width: 90%;
+  max-width: 95%;
 
-  background: rgba(39, 39, 42, 0.9);
-  /* Zinc-800 with opacity */
+  background: var(--nav-bg);
   backdrop-filter: blur(12px);
   border: none;
   border-radius: 100px;
   /* Pill shape */
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 32px var(--shadow-color);
 
   z-index: 1000;
 }
 
 .icon-btn {
   border: none;
-  color: #fff;
+  color: var(--text-primary);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -42,26 +42,14 @@ h1 {
   border-radius: 8px;
   /* Slightly rounded square */
   transition: background 0.2s;
-  padding: 8px;
+  padding: 0;
+  width: 40px;
+  height: 40px;
   flex-shrink: 0;
   /* Prevent squishing */
 }
 
-.sort-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  height: 36px;
-  padding: 0 10px;
-}
 
-.btn-label {
-  font-weight: 600;
-  font-size: 0.85rem;
-  line-height: 1;
-  white-space: nowrap;
-  /* Force 1 line */
-}
 
 /* Add padding to container so content isn't hidden behind the bar */
 .app-container {
@@ -77,4 +65,14 @@ h1 {
   display: flex;
   justify-content: flex-end;
   padding-bottom: 10px;
+}
+
+/* Bubble Mode - Locked scrolling and full width */
+.app-container.bubble-mode {
+  height: 100vh;
+  overflow: hidden;
+  padding: 0;
+  padding-bottom: 0;
+  max-width: 100%;
+  margin: 0;
 }
