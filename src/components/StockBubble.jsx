@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 // eslint-disable-next-line no-unused-vars
-import { motion, useSpring, useAnimate } from 'framer-motion';
+import { motion, useSpring, useMotionValue, animate } from 'framer-motion';
 import { getStockQuote } from '../services/api';
 import { Loader } from 'lucide-react';
 import './StockBubble.css';
@@ -23,18 +23,27 @@ export default function StockBubble({
     const [error, setError] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
 
-    // useAnimate hook for manual animation control
-    const [scope, animate] = useAnimate();
+    // Controlled motion values for drag offset
+    // These track the distance from the bubble's "home" position
+    // Framer Motion's 'drag' prop will automatically update these values
+    const dragX = useMotionValue(0);
+    const dragY = useMotionValue(0);
 
-    // Spring-animated repulsion offsets
-    const repulsionSpringConfig = { stiffness: 150, damping: 25 };
-    const springRepulsionX = useSpring(repulsionX, repulsionSpringConfig);
-    const springRepulsionY = useSpring(repulsionY, repulsionSpringConfig);
+    // Spring-animated repulsion offsets for smooth, physical movement
+    const repulsionSpringConfig = { stiffness: 100, damping: 20 };
+    const springRepulsionX = useSpring(0, repulsionSpringConfig);
+    const springRepulsionY = useSpring(0, repulsionSpringConfig);
 
+    // Update repulsion spring targets
     useEffect(() => {
-        springRepulsionX.set(repulsionX);
-        springRepulsionY.set(repulsionY);
-    }, [repulsionX, repulsionY, springRepulsionX, springRepulsionY]);
+        // While dragging, we "lock" the repulsion to whatever it was at the start
+        // of the drag. This prevents the bubble from snapping to its home 
+        // position (0 repulsion) while the user is still holding it.
+        if (!isDragging) {
+            springRepulsionX.set(repulsionX);
+            springRepulsionY.set(repulsionY);
+        }
+    }, [repulsionX, repulsionY, isDragging, springRepulsionX, springRepulsionY]);
 
     useEffect(() => {
         let mounted = true;
@@ -96,41 +105,54 @@ export default function StockBubble({
 
     const handleDragStart = () => {
         setIsDragging(true);
+        // Important: Stop the return animation immediately when grabbed.
+        // Framer Motion's drag gesture will automatically capture the 
+        // current value of dragX/dragY and continue from there.
+        dragX.stop();
+        dragY.stop();
     };
 
-    const handleDrag = (event, info) => {
+    const handleDrag = () => {
         if (onDrag) {
-            const absoluteX = x + info.offset.x;
-            const absoluteY = y + info.offset.y;
+            // Report the actual displacement from home to the parent 
+            // so other bubbles can react (repulsion).
+            const absoluteX = x + dragX.get();
+            const absoluteY = y + dragY.get();
             onDrag(symbol, absoluteX, absoluteY);
         }
     };
 
-    const handleDragEnd = async () => {
+    const handleDragEnd = () => {
         setIsDragging(false);
 
-        // Animate back to origin SLOWLY (10 seconds)
-        await animate(scope.current,
-            { x: 0, y: 0 },
-            {
-                type: "tween",
-                duration: 10,
-                ease: [0.25, 0.1, 0.25, 1] // ease-out
-            }
-        );
+        // Very slow, gentle return to origin (10 seconds)
+        // We use tween + easeOut for a weightless, floaty feel.
+        // This animates our motion values back to 0.
+        animate(dragX, 0, {
+            type: "tween",
+            duration: 10,
+            ease: "easeOut"
+        });
+
+        animate(dragY, 0, {
+            type: "tween",
+            duration: 10,
+            ease: "easeOut"
+        });
 
         if (onDragEnd) {
             onDragEnd(symbol);
         }
     };
 
+    // Base position and floating animations
     const wrapperStyle = {
         position: 'absolute',
         left: x - size / 2,
         top: y - size / 2,
         width: size,
         height: size,
-        zIndex: Math.round(size),
+        zIndex: isDragging ? 2000 : Math.round(size),
         ...animationStyle
     };
 
@@ -183,40 +205,50 @@ export default function StockBubble({
 
     return (
         <motion.div
-            ref={scope}
             className="bubble-wrapper"
             style={{
                 ...wrapperStyle,
-                // Add repulsion offset (only when not dragging)
-                marginLeft: isDragging ? 0 : springRepulsionX.get(),
-                marginTop: isDragging ? 0 : springRepulsionY.get()
+                // Outer Layer: Repulsion Displacement
+                x: springRepulsionX,
+                y: springRepulsionY
             }}
             title={`${symbol}: ${dayChange.toFixed(2)}%`}
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ type: "spring", bounce: 0.5, duration: 0.8, delay: parseFloat(animationStyle['--pop-delay']) }}
-            drag
-            dragElastic={0.1}
-            dragMomentum={false}
-            onDragStart={handleDragStart}
-            onDrag={handleDrag}
-            onDragEnd={handleDragEnd}
-            whileHover={{ scale: 1.1, zIndex: 1000 }}
-            whileDrag={{ scale: 1.2, zIndex: 1001 }}
         >
-            <div className="bubble-scale-wrapper">
-                <div
-                    className={`stock-bubble ${shouldPulse ? 'pulse' : ''}`}
-                    style={bubbleStyle}
-                >
-                    <div className="bubble-content">
-                        {!hideTicker && <span className="bubble-symbol">{symbol}</span>}
-                        <span className="bubble-change">
-                            {dayChange > 0 ? '+' : ''}{dayChange.toFixed(2)}%
-                        </span>
+            <motion.div
+                className="drag-layer"
+                style={{
+                    width: '100%',
+                    height: '100%',
+                    // Inner Layer: Drag & Return Displacement
+                    x: dragX,
+                    y: dragY
+                }}
+                drag
+                dragMomentum={false}
+                dragElastic={0.05}
+                onDragStart={handleDragStart}
+                onDrag={handleDrag}
+                onDragEnd={handleDragEnd}
+                whileHover={{ scale: 1.1 }}
+                whileDrag={{ scale: 1.2 }}
+            >
+                <div className="bubble-scale-wrapper">
+                    <div
+                        className={`stock-bubble ${shouldPulse ? 'pulse' : ''}`}
+                        style={bubbleStyle}
+                    >
+                        <div className="bubble-content">
+                            {!hideTicker && <span className="bubble-symbol">{symbol}</span>}
+                            <span className="bubble-change">
+                                {dayChange > 0 ? '+' : ''}{dayChange.toFixed(2)}%
+                            </span>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </motion.div>
         </motion.div>
     );
 }

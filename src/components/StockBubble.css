@@ -10,10 +10,7 @@
     cursor: grab;
 }
 
-/* Very slow return animation when released */
-.bubble-wrapper.returning {
-    transition: transform 2s cubic-bezier(0.25, 0.1, 0.25, 1);
-}
+
 
 .bubble-scale-wrapper {
     width: 100%;
