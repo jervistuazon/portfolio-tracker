@@ -1,0 +1,77 @@
+.version-update-toast {
+    position: fixed;
+    bottom: 80px;
+    /* Above the bottom nav bar */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(30, 30, 30, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border-color, #333);
+    border-radius: 30px;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    z-index: 9999;
+    animation: slideUp 0.3s ease-out;
+    width: max-content;
+    max-width: 90vw;
+}
+
+.version-update-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-primary, #fff);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.spin-icon {
+    animation: spin 3s linear infinite;
+    color: var(--accent-blue, #3b82f6);
+}
+
+.update-button {
+    background-color: var(--accent-blue, #3b82f6);
+    color: white;
+    border: none;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.update-button:hover {
+    background-color: var(--accent-blue-hover, #2563eb);
+    transform: scale(1.05);
+}
+
+.update-button:active {
+    transform: scale(0.95);
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translate(-50%, 20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}

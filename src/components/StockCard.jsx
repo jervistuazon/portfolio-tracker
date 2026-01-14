@@ -112,13 +112,14 @@ export default function StockCard({ holding, onRemove, onEdit, viewMode = 'detai
 
     // Gradient Calculation
     const intensity = Math.min(Math.abs(returnPercent), 10) / 10;
+    const dayIntensity = Math.min(Math.abs(quote.dp), 10) / 10;
     const targetColor = isPositive ? '34, 197, 94' : '239, 68, 68';
     const trendColor = `rgb(${targetColor})`;
 
     const backgroundStyle = {
         backgroundColor: `rgba(${targetColor}, ${0.1 + (intensity * 0.2)})`,
         borderColor: `rgba(${targetColor}, ${0.2 + (intensity * 0.5)})`,
-        boxShadow: `0 4px 20px rgba(${targetColor}, ${intensity * 0.15})`
+        boxShadow: `0 4px 20px rgba(${targetColor}, ${intensity * 0.15}), 0 0 ${10 + dayIntensity * 15}px rgba(${targetColor}, ${0.1 + dayIntensity * 0.5})`
     };
 
     const dayChangePositive = quote.d >= 0;

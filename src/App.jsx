@@ -6,6 +6,7 @@ import AddPositionModal from './components/AddPositionModal';
 import SyncModal from './components/SyncModal';
 import { getApiKey } from './services/api';
 import { Eye, EyeOff, LayoutGrid, List, ArrowUpDown, Search, ArrowDownAZ, ArrowUpAZ, TrendingUp, TrendingDown, Cloud, Sun, Moon } from 'lucide-react';
+import VersionCheck from './components/VersionCheck';
 import './styles/App.css';
 
 function App() {
@@ -136,6 +137,7 @@ function App() {
 
   return (
     <div className={`app-container ${viewMode === 'bubble' ? 'bubble-mode' : ''}`}>
+      <VersionCheck />
       <div className="mesh-container">
         <div className="mesh-blob blob-1"></div>
         <div className="mesh-blob blob-2"></div>

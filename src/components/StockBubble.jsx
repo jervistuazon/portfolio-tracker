@@ -218,6 +218,9 @@ export default function StockBubble({
         }
     }
 
+    const glowSpread = 15 + intensity * 25;
+    const glowAlpha = 0.3 + intensity * 0.5;
+
     const bubbleStyle = {
         backgroundColor: `rgba(${r}, ${g}, ${b}, ${opacity})`,
         border: `2px solid rgba(${r}, ${g}, ${b}, 1)`,
@@ -225,7 +228,10 @@ export default function StockBubble({
         '--pulse-rgb': `${r}, ${g}, ${b}`,
         '--bubble-animation': animationName,
         '--animation-duration': animationDuration,
-        '--breathe-scale': breatheScale
+        '--breathe-scale': breatheScale,
+        '--glow-spread': `${glowSpread}px`,
+        '--glow-alpha': glowAlpha,
+        boxShadow: `inset 0 0 20px rgba(255, 255, 255, 0.2), 0 4px 10px rgba(0, 0, 0, 0.3), 0 0 var(--glow-spread) rgba(var(--pulse-rgb), var(--glow-alpha))`
     };
 
     const shouldPulse = Math.abs(dayChange) >= 5;
