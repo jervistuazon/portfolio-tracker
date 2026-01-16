@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 // eslint-disable-next-line no-unused-vars
 import { motion, useSpring, useMotionValue, animate } from 'framer-motion';
 import { getStockQuote } from '../services/api';
-import { Loader } from 'lucide-react';
+import { Loader, X } from 'lucide-react';
 import './StockBubble.css';
 
 export default function StockBubble({
@@ -13,6 +13,7 @@ export default function StockBubble({
     repulsionX = 0,
     repulsionY = 0,
     onQuoteUpdate,
+    onRemove,
     hideTicker,
     onDrag,
     onDragEnd
@@ -145,6 +146,11 @@ export default function StockBubble({
         }
     };
 
+    const handleRemove = (e) => {
+        e.stopPropagation();
+        if (onRemove) onRemove(symbol);
+    };
+
     // Base position and floating animations
     const wrapperStyle = {
         position: 'absolute',
@@ -156,42 +162,7 @@ export default function StockBubble({
         ...animationStyle
     };
 
-    if (loading) {
-        return (
-            <div className="bubble-wrapper" style={wrapperStyle}>
-                <div className="bubble-scale-wrapper">
-                    <div className="bubble-jitter-wrapper">
-                        <div
-                            className="stock-bubble loading"
-                            style={{
-                                background: 'rgba(255,255,255,0.05)',
-                                border: '1px solid rgba(255,255,255,0.1)',
-                                fontSize: Math.max(10, size / 5) + 'px'
-                            }}
-                        >
-                            <Loader className="spin-animation" size={Math.max(16, size / 4)} />
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    if (error || !quote) {
-        return (
-            <div className="bubble-wrapper" style={wrapperStyle}>
-                <div className="bubble-scale-wrapper">
-                    <div className="bubble-jitter-wrapper">
-                        <div className="stock-bubble error" style={{ fontSize: Math.max(14, size / 3) + 'px' }}>
-                            <span>?</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    const dayChange = quote.dp;
+    const dayChange = quote?.dp || 0;
     const isPositive = dayChange >= 0;
     const intensity = Math.min(Math.abs(dayChange), 10) / 10;
     const r = isPositive ? 34 : 239;
@@ -221,7 +192,11 @@ export default function StockBubble({
     const glowSpread = 15 + intensity * 25;
     const glowAlpha = 0.3 + intensity * 0.5;
 
-    const bubbleStyle = {
+    const bubbleStyle = loading || error ? {
+        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        fontSize: Math.max(10, size / 5) + 'px'
+    } : {
         backgroundColor: `rgba(${r}, ${g}, ${b}, ${opacity})`,
         border: `2px solid rgba(${r}, ${g}, ${b}, 1)`,
         fontSize: Math.max(10, size / 5) + 'px',
@@ -234,7 +209,7 @@ export default function StockBubble({
         boxShadow: `inset 0 0 20px rgba(255, 255, 255, 0.2), 0 4px 10px rgba(0, 0, 0, 0.3), 0 0 var(--glow-spread) rgba(var(--pulse-rgb), var(--glow-alpha))`
     };
 
-    const shouldPulse = Math.abs(dayChange) >= 5;
+    const shouldPulse = quote && Math.abs(dayChange) >= 5;
 
     return (
         <motion.div
@@ -245,7 +220,7 @@ export default function StockBubble({
                 x: springRepulsionX,
                 y: springRepulsionY
             }}
-            title={`${symbol}: ${dayChange.toFixed(2)}%`}
+            title={`${symbol}${quote ? `: ${dayChange.toFixed(2)}%` : ''}`}
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ type: "spring", bounce: 0.5, duration: 0.8, delay: parseFloat(animationStyle['--pop-delay']) }}
@@ -275,14 +250,23 @@ export default function StockBubble({
                         '--breathe-scale': breatheScale
                     }}>
                         <div
-                            className={`stock-bubble ${shouldPulse ? 'pulse' : ''}`}
+                            className={`stock-bubble ${loading ? 'loading' : ''} ${error ? 'error' : ''} ${shouldPulse ? 'pulse' : ''}`}
                             style={bubbleStyle}
                         >
+                            <button className="bubble-remove-btn" onClick={handleRemove}>
+                                <X size={Math.max(12, size / 10)} />
+                            </button>
                             <div className="bubble-content">
                                 {!hideTicker && <span className="bubble-symbol">{symbol}</span>}
-                                <span className="bubble-change">
-                                    {dayChange > 0 ? '+' : ''}{dayChange.toFixed(2)}%
-                                </span>
+                                {loading ? (
+                                    <Loader className="spin-animation" size={Math.max(16, size / 4)} />
+                                ) : error ? (
+                                    <span style={{ fontSize: '1.5em' }}>?</span>
+                                ) : (
+                                    <span className="bubble-change">
+                                        {dayChange > 0 ? '+' : ''}{dayChange.toFixed(2)}%
+                                    </span>
+                                )}
                             </div>
                         </div>
                     </div>

@@ -2,7 +2,7 @@ import { useMemo, useState, useEffect, useCallback } from 'react';
 import StockBubble from './StockBubble';
 import './Portfolio.css';
 
-export default function BubblePortfolio({ stocks, onQuoteUpdate, hideTicker }) {
+export default function BubblePortfolio({ stocks, onQuoteUpdate, onRemove, hideTicker }) {
     const [dimensions, setDimensions] = useState({ width: window.innerWidth, height: window.innerHeight - 80 });
     const [draggedBubble, setDraggedBubble] = useState(null); // { symbol, x, y }
     const [bubblesData, setBubblesData] = useState([]); // Store bubble data for collision calculation
@@ -233,6 +233,7 @@ export default function BubblePortfolio({ stocks, onQuoteUpdate, hideTicker }) {
                         repulsionX={repulsion.x}
                         repulsionY={repulsion.y}
                         onQuoteUpdate={onQuoteUpdate}
+                        onRemove={onRemove}
                         hideTicker={hideTicker}
                         onDrag={handleDrag}
                         onDragEnd={handleDragEnd}

@@ -17,6 +17,7 @@ export default function Portfolio({ stocks, onRemove, onEdit, viewMode, onQuoteU
             <BubblePortfolio
                 stocks={stocks}
                 onQuoteUpdate={onQuoteUpdate}
+                onRemove={onRemove}
                 hideTicker={hideTicker}
             />
         );

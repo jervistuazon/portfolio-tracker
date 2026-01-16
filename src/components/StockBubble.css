@@ -273,3 +273,31 @@
     border: 2px solid #555;
     color: #888;
 }
+
+.bubble-remove-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    color: #ef4444;
+    border-radius: 50%;
+    padding: 4px;
+    cursor: pointer;
+    opacity: 0;
+    transition: all 0.2s ease;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stock-bubble:hover .bubble-remove-btn {
+    opacity: 1;
+}
+
+.bubble-remove-btn:hover {
+    background: rgba(239, 68, 68, 0.8);
+    color: white;
+    transform: scale(1.1);
+}
