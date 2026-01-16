@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 // eslint-disable-next-line no-unused-vars
 import { motion, useSpring, useMotionValue, animate } from 'framer-motion';
 import { getStockQuote } from '../services/api';
-import { Loader, X } from 'lucide-react';
+import { Loader } from 'lucide-react';
 import './StockBubble.css';
 
 export default function StockBubble({
@@ -13,7 +13,6 @@ export default function StockBubble({
     repulsionX = 0,
     repulsionY = 0,
     onQuoteUpdate,
-    onRemove,
     hideTicker,
     onDrag,
     onDragEnd
@@ -146,10 +145,6 @@ export default function StockBubble({
         }
     };
 
-    const handleRemove = (e) => {
-        e.stopPropagation();
-        if (onRemove) onRemove(symbol);
-    };
 
     // Base position and floating animations
     const wrapperStyle = {
@@ -253,9 +248,6 @@ export default function StockBubble({
                             className={`stock-bubble ${loading ? 'loading' : ''} ${error ? 'error' : ''} ${shouldPulse ? 'pulse' : ''}`}
                             style={bubbleStyle}
                         >
-                            <button className="bubble-remove-btn" onClick={handleRemove}>
-                                <X size={Math.max(12, size / 10)} />
-                            </button>
                             <div className="bubble-content">
                                 {!hideTicker && <span className="bubble-symbol">{symbol}</span>}
                                 {loading ? (
